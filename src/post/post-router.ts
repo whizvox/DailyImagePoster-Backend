@@ -3,7 +3,7 @@ import postRepo from "./post-repository";
 import PostSearchQuery from "./post-search-query";
 import Post from "./post";
 import { v4 as uuidv4 } from "uuid";
-import { ApiError, badRequest, conflict, fromParseError } from "../api-result";
+import { ApiError, badRequest, conflict, created, ok } from "../api-result";
 import { parseNumber, parseBoolean, parseDate, ParseError, parseUuid, parseTrimmedString } from "../query";
 
 interface StrSearchQuery {
@@ -91,23 +91,13 @@ const router = express.Router();
 router.get("/:id", (req, res) => {
   const { id } = req.params;
   const post = postRepo.get(id);
-  if (post === null) {
-    throw new ApiError(badRequest(`Unknown ID: ${id}`));
-  }
-  res.send(post);
+  res.send(ok(post));
 });
 
 router.get("/", (req: Request<{}, {}, {}, StrSearchQuery>, res) => {
-  let query: PostSearchQuery;
-  try {
-    query = parseSearchQuery(req.query);
-  } catch (err) {
-    const result = fromParseError(err);
-    res.status(result.status).send(result);
-    return;
-  }
+  const query = parseSearchQuery(req.query);
   const page = postRepo.getPage(query);
-  res.send(page);
+  res.send(ok(page));
 });
 
 router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
@@ -170,7 +160,13 @@ router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
     throw new ApiError(conflict(`(imgur_id) ${post.imgurId}`));
   }
   postRepo.add(post);
-  res.send(post);
+  res.status(201).send(created(post));
+});
+
+router.delete("/:id", (req, res) => {
+  const { id } = req.params;
+  const result = postRepo.remove(id);
+  res.send(ok(result));
 });
 
 export default router;
