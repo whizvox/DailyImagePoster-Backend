@@ -4,7 +4,14 @@ import PostSearchQuery from "./post-search-query";
 import Post from "./post";
 import { v4 as uuidv4 } from "uuid";
 import { ApiError, badRequest, conflict, created, ok } from "../api-result";
-import { parseNumber, parseBoolean, parseDate, ParseError, parseUuid, parseTrimmedString } from "../query";
+import {
+  parseNumber,
+  parseBoolean,
+  parseDate,
+  ParseError,
+  parseUuid,
+  parseTrimmedString,
+} from "../query";
 
 interface StrSearchQuery {
   page: string;

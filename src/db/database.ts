@@ -3,7 +3,9 @@ import Database from "better-sqlite3";
 import logger from "../logger";
 import { WORKING_DIR } from "../config";
 
-const db = new Database(path.join(WORKING_DIR, "dailyimageposter.db"), { verbose: (msg) => logger.debug(msg) });
+const db = new Database(path.join(WORKING_DIR, "dailyimageposter.db"), {
+  verbose: (msg) => logger.debug(msg),
+});
 
 const checkParameters = (params: unknown[]): unknown[] => {
   for (let i = 0; i < params.length; i++) {

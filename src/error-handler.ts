@@ -4,7 +4,12 @@ import { ParseError } from "./query";
 import logger from "./logger";
 import { SEND_SERVER_ERROR } from "./config";
 
-const errorHandler = (err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
+const errorHandler = (
+  err: unknown,
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction,
+) => {
   if (err instanceof ApiError) {
     res.status(err.response.status).send(err.response);
     return;
