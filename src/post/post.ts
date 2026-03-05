@@ -9,6 +9,9 @@ class Post {
   imageNsfw: boolean;
   sourceNsfw: boolean;
   directSource: string | null;
+  redditPostId: string;
+  redditCommentId: string | null;
+  imgurId: string | null;
   created: Date;
 
   constructor(
@@ -21,7 +24,10 @@ class Post {
     comment: string | null,
     imageNsfw: boolean,
     sourceNsfw: boolean,
-    directSource: string | null = null,
+    directSource: string | null,
+    redditPostId: string,
+    redditCommentId: string | null,
+    imgurId: string | null,
     created: Date,
   ) {
     this.id = id;
@@ -34,6 +40,9 @@ class Post {
     this.imageNsfw = imageNsfw;
     this.sourceNsfw = sourceNsfw;
     this.directSource = directSource;
+    this.redditPostId = redditPostId;
+    this.redditCommentId = redditCommentId;
+    this.imgurId = imgurId;
     this.created = created;
   }
 }

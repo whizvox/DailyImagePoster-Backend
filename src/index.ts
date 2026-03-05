@@ -1,12 +1,18 @@
-import express, { Request, Response } from "express";
+import { ENVIRONMENT, LOG_LEVEL, PORT, WORKING_DIR, initalize as initConfig } from "./config";
+initConfig();
+import express, { json, Request, Response } from "express";
 import { initialize as initPosts } from "./post/post-repository";
 import logger from "./logger";
-import { PORT } from "./env";
+import postRouter from "./post/post-router";
+
 const app = express();
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello world!");
 });
+
+app.use(json());
+app.use("/post", postRouter);
 
 app.listen(PORT, () => {
   initPosts();

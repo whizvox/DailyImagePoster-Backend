@@ -1,9 +1,9 @@
 import path from "node:path";
 import Database from "better-sqlite3";
 import logger from "../logger";
-import { WORKING_DIR } from "../env";
+import { WORKING_DIR } from "../config";
 
-const db = new Database(path.join(WORKING_DIR, "dailyimageposter.db"), { verbose: logger.debug });
+const db = new Database(path.join(WORKING_DIR, "dailyimageposter.db"), { verbose: (msg) => logger.debug(msg) });
 
 const checkParameters = (params: unknown[]): unknown[] => {
   for (let i = 0; i < params.length; i++) {
@@ -22,9 +22,16 @@ const execute = (sql: string, ...params: unknown[]): Database.RunResult => {
   return info;
 };
 
-const query = <ResultType>(sql: string, parser: (result: unknown) => ResultType, ...params: unknown[]): ResultType => {
+const query = <ResultType>(
+  sql: string,
+  parser: (result: unknown) => ResultType,
+  ...params: unknown[]
+): ResultType | null => {
   const stmt = db.prepare(sql);
   const result = stmt.get(...checkParameters(params));
+  if (result === undefined) {
+    return null;
+  }
   return parser(result);
 };
 
