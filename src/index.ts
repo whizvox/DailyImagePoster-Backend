@@ -1,9 +1,11 @@
-import { ENVIRONMENT, LOG_LEVEL, PORT, WORKING_DIR, initalize as initConfig } from "./config";
+import { PORT, initalize as initConfig } from "./config";
 initConfig();
-import express, { json, Request, Response } from "express";
-import { initialize as initPosts } from "./post/post-repository";
+
+import express, { json, Request, Response, urlencoded } from "express";
+import postRepo from "./post/post-repository";
 import logger from "./logger";
 import postRouter from "./post/post-router";
+import errorHandler from "./error-handler";
 
 const app = express();
 
@@ -12,10 +14,12 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use(json());
+app.use(urlencoded());
 app.use("/post", postRouter);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
-  initPosts();
+  postRepo.initialize();
   logger.info(`Server running at http://localhost:${PORT}`);
   // for (let i = 0; i < 10000; i++) {
   //   const post = new Post(

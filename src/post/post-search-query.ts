@@ -1,6 +1,6 @@
 import PageQuery from "../db/page-query";
 
-interface PostQuery extends PageQuery {
+interface PostSearchQuery extends PageQuery {
   min_num: number;
   max_num: number;
   has_sub: boolean;
@@ -18,4 +18,4 @@ interface PostQuery extends PageQuery {
   created_before: Date;
 }
 
-export default PostQuery;
+export default PostSearchQuery;

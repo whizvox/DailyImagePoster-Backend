@@ -1,5 +1,6 @@
 class Post {
   id: string;
+  image: string;
   num: number;
   subNum: number;
   title: string;
@@ -16,6 +17,7 @@ class Post {
 
   constructor(
     id: string,
+    image: string,
     num: number,
     subNum: number,
     title: string,
@@ -31,6 +33,7 @@ class Post {
     created: Date,
   ) {
     this.id = id;
+    this.image = image;
     this.num = num;
     this.subNum = subNum;
     this.title = title;

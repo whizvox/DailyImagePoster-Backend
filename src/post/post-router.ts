@@ -1,10 +1,12 @@
 import express, { Request } from "express";
-import { getPage, get as getPost } from "./post-repository";
-import PostQuery from "./post-query";
+import postRepo from "./post-repository";
+import PostSearchQuery from "./post-search-query";
 import Post from "./post";
 import { v4 as uuidv4 } from "uuid";
+import { ApiError, badRequest, conflict, fromParseError } from "../api-result";
+import { parseNumber, parseBoolean, parseDate, ParseError, parseUuid, parseTrimmedString } from "../query";
 
-interface SearchQuery {
+interface StrSearchQuery {
   page: string;
   limit: string;
   min_num: string;
@@ -24,7 +26,9 @@ interface SearchQuery {
   created_before: string;
 }
 
-interface CreateQuery {
+interface StrCreateQuery {
+  id: string;
+  image: string;
   num: string;
   sub_num: string;
   title: string;
@@ -37,68 +41,136 @@ interface CreateQuery {
   reddit_post_id: string;
   reddit_comment_id: string;
   imgur_id: string;
+  created: string;
 }
 
-const parse = <Type>(param: string | undefined, parser: (param: string) => Type): Type | undefined => {
-  if (param === undefined) {
-    return undefined;
-  }
-  return parser(param);
-};
-
-const parseNumber = (param: string | undefined): number | undefined => {
-  return parse(param, (p) => Number(p));
-};
-
-const parseBoolean = (param: string | undefined): boolean | undefined => {
-  return parse(param, (p) => p !== "0");
-};
-
-const parseDate = (param: string | undefined): Date | undefined => {
-  return parse(param, (p) => new Date(p));
-};
-
-const parseSearchQuery = (query: SearchQuery): PostQuery => {
+const parseSearchQuery = (query: StrSearchQuery): PostSearchQuery => {
   return {
-    page: parseNumber(query.page) || 0,
-    limit: parseNumber(query.limit) || 20,
-    min_num: parseNumber(query.min_num),
-    max_num: parseNumber(query.max_num),
-    has_sub: parseBoolean(query.has_sub),
-    min_sub: parseNumber(query.min_sub),
-    max_sub: parseNumber(query.max_sub),
-    title: query.title,
-    artist: query.artist,
-    source: query.source,
-    comment: query.comment,
-    image_nsfw: parseBoolean(query.image_nsfw),
-    source_nsfw: parseBoolean(query.source_nsfw),
-    direct_source: query.direct_source,
-    imgur_post: parseBoolean(query.imgur_post),
-    created_after: parseDate(query.created_after),
-    created_before: parseDate(query.created_before),
-  } as PostQuery;
+    page: parseNumber(query.page, "page") || 0,
+    limit: parseNumber(query.limit, "limit") || 20,
+    min_num: parseNumber(query.min_num, "min_num"),
+    max_num: parseNumber(query.max_num, "max_num"),
+    has_sub: parseBoolean(query.has_sub, "has_sub"),
+    min_sub: parseNumber(query.min_sub, "min_sub"),
+    max_sub: parseNumber(query.max_sub, "max_sub"),
+    title: parseTrimmedString(query.title),
+    artist: parseTrimmedString(query.artist),
+    source: parseTrimmedString(query.source),
+    comment: parseTrimmedString(query.comment),
+    image_nsfw: parseBoolean(query.image_nsfw, "image_nsfw"),
+    source_nsfw: parseBoolean(query.source_nsfw, "source_nsfw"),
+    direct_source: parseTrimmedString(query.direct_source),
+    imgur_post: parseBoolean(query.imgur_post, "imgur_post"),
+    created_after: parseDate(query.created_after, "created_after"),
+    created_before: parseDate(query.created_before, "created_before"),
+  } as PostSearchQuery;
+};
+
+const parseCreateQuery = (query: StrCreateQuery): Post => {
+  return new Post(
+    parseUuid(query.id, "id") ?? uuidv4(),
+    parseTrimmedString(query.image)!,
+    parseNumber(query.num, "num")!,
+    parseNumber(query.sub_num, "sub_num") ?? 0,
+    parseTrimmedString(query.title)!,
+    parseTrimmedString(query.artist)!,
+    parseTrimmedString(query.source)!,
+    parseTrimmedString(query.comment) || null,
+    parseBoolean(query.image_nsfw, "image_nsfw") ?? false,
+    parseBoolean(query.source_nsfw, "source_nsfw") ?? false,
+    parseTrimmedString(query.direct_source) || null,
+    parseTrimmedString(query.reddit_post_id)!,
+    parseTrimmedString(query.reddit_comment_id) || null,
+    parseTrimmedString(query.imgur_id) || null,
+    parseDate(query.created, "created") ?? new Date(),
+  );
 };
 
 const router = express.Router();
 
-router.get("/", (req: Request<{}, {}, {}, SearchQuery>, res) => {
-  const query = parseSearchQuery(req.query);
-  const page = getPage(query);
-  res.send(page);
-});
-
 router.get("/:id", (req, res) => {
   const { id } = req.params;
-  const post = getPost(id);
+  const post = postRepo.get(id);
+  if (post === null) {
+    throw new ApiError(badRequest(`Unknown ID: ${id}`));
+  }
   res.send(post);
 });
 
-// router.post("/", (req: Request<{}, {}, {}, CreateQuery>, res) => {
-//   const query = req.query;
-//   if (query.num < 0) {
+router.get("/", (req: Request<{}, {}, {}, StrSearchQuery>, res) => {
+  let query: PostSearchQuery;
+  try {
+    query = parseSearchQuery(req.query);
+  } catch (err) {
+    const result = fromParseError(err);
+    res.status(result.status).send(result);
+    return;
+  }
+  const page = postRepo.getPage(query);
+  res.send(page);
+});
 
-//   }
-// });
+router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
+  const query = req.query;
+  const missing: string[] = [];
+  if (query.image === undefined) {
+    missing.push("image");
+  }
+  if (query.num === undefined) {
+    missing.push("num");
+  }
+  if (query.title === undefined) {
+    missing.push("title");
+  }
+  if (query.artist === undefined) {
+    missing.push("artist");
+  }
+  if (query.source === undefined) {
+    missing.push("source");
+  }
+  if (query.reddit_post_id === undefined) {
+    missing.push("reddit_post_id");
+  }
+  if (missing.length > 0) {
+    throw new ApiError(badRequest(`Missing required field(s): ${missing.join(", ")}`));
+  }
+
+  const post = parseCreateQuery(query);
+  if (post.num < 1) {
+    throw new ParseError("Must be a positive integer.", "num");
+  }
+  if (post.subNum < 0) {
+    throw new ParseError("Must be a nonnegative integer.", "sub_num");
+  }
+  if (post.title === "") {
+    throw new ParseError("Must not be blank.", "title");
+  }
+  if (post.artist === "") {
+    throw new ParseError("Must not be blank.", "artist");
+  }
+  if (post.source === "") {
+    throw new ParseError("Must not be blank.", "source");
+  }
+  if (!postRepo.isIdUnique(post.id)) {
+    throw new ApiError(conflict(`(id) ${post.id}`));
+  }
+  if (!postRepo.isImageUnique(post.image)) {
+    throw new ApiError(conflict(`(image) ${post.image}`));
+  }
+  if (!postRepo.isNumberUnique(post.num, post.subNum)) {
+    throw new ApiError(conflict(`(num, sub_num) ${post.num}, ${post.subNum}`));
+  }
+  if (!postRepo.isRedditPostUnique(post.redditPostId)) {
+    throw new ApiError(conflict(`(reddit_comment_id) ${post.redditPostId}`));
+  }
+  if (post.redditCommentId !== null && !postRepo.isRedditCommentUnique(post.redditCommentId)) {
+    throw new ApiError(conflict(`(reddit_comment_id) ${post.redditCommentId}`));
+  }
+  if (post.imgurId !== null && !postRepo.isImgurPostUnique(post.imgurId)) {
+    throw new ApiError(conflict(`(imgur_id) ${post.imgurId}`));
+  }
+  postRepo.add(post);
+  res.send(post);
+});
 
 export default router;
