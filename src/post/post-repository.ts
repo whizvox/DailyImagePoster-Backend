@@ -1,4 +1,4 @@
-import { execute, iterate, query } from "../db/database";
+import db from "../db/database";
 import Page from "../db/page";
 import Post from "./post";
 import PostSearchQuery from "./post-search-query";
@@ -81,15 +81,15 @@ const parseCount = (row: unknown): number | undefined => {
 };
 
 const initialize = () => {
-  execute(SQL_CREATE);
+  db.execute(SQL_CREATE);
 };
 
 const getCount = (): number => {
-  return query(SQL_COUNT_ALL, parseCount) ?? 0;
+  return db.query(SQL_COUNT_ALL, parseCount) ?? 0;
 };
 
 const isUnique = (sql: string, ...params: unknown[]): boolean => {
-  return query(sql, parseCount, ...params) === 0;
+  return db.query(sql, parseCount, ...params) === 0;
 };
 
 const isIdUnique = (id: string): boolean => {
@@ -191,7 +191,7 @@ const forEach = (consumer: (post: Post) => void, query?: PostSearchQuery) => {
   }
   clauses.push("LIMIT ?");
   params.push(query.limit);
-  iterate(`${SQL_SELECT_ALL} ${clauses.join(" ")}`, parseRow, consumer, ...params);
+  db.iterate(`${SQL_SELECT_ALL} ${clauses.join(" ")}`, parseRow, consumer, ...params);
 };
 
 const getPage = (query: PostSearchQuery): Page<Post> => {
@@ -202,11 +202,11 @@ const getPage = (query: PostSearchQuery): Page<Post> => {
 };
 
 const get = (id: string): Post | null => {
-  return query(SQL_SELECT_BY_ID, parseRow, id);
+  return db.query(SQL_SELECT_BY_ID, parseRow, id);
 };
 
 const add = (post: Post) => {
-  execute(
+  db.execute(
     SQL_INSERT,
     post.id,
     post.image,
@@ -227,7 +227,7 @@ const add = (post: Post) => {
 };
 
 const remove = (id: string): boolean => {
-  return execute(SQL_DELETE_BY_ID, id).changes > 0;
+  return db.execute(SQL_DELETE_BY_ID, id).changes > 0;
 };
 
 export default {

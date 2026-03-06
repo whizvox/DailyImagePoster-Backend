@@ -129,7 +129,7 @@ router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
     missing.push("reddit_post_id");
   }
   if (missing.length > 0) {
-    throw new ApiError(badRequest(`Missing required field(s): ${missing.join(", ")}`));
+    throw new ApiError(badRequest(`Missing required parameter(s): ${missing.join(", ")}`));
   }
 
   const post = parseCreateQuery(query);

@@ -7,7 +7,10 @@ import { LOG_LEVEL, WORKING_DIR } from "./config";
 const logger = pino(
   { level: LOG_LEVEL },
   pino.multistream([
-    { level: LOG_LEVEL, stream: fs.createWriteStream(path.join(WORKING_DIR, "log.txt"), { flags: "a" }) },
+    {
+      level: LOG_LEVEL,
+      stream: fs.createWriteStream(path.join(WORKING_DIR, "log.txt"), { flags: "a" }),
+    },
     { level: LOG_LEVEL, stream: PinoPretty() },
   ]),
 );

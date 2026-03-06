@@ -59,4 +59,4 @@ const gather = <ResultType>(
   return rows;
 };
 
-export { execute, query, iterate, gather };
+export default { execute, query, iterate, gather };

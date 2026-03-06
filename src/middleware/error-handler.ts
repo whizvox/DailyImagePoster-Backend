@@ -1,8 +1,8 @@
 import express from "express";
-import { ApiError, badRequest, internalServerError } from "./api-result";
-import { ParseError } from "./query";
-import logger from "./logger";
-import { SEND_SERVER_ERROR } from "./config";
+import { ApiError, badRequest, internalServerError } from "../api-result";
+import { ParseError } from "../query";
+import logger from "../logger";
+import { SEND_SERVER_ERROR } from "../config";
 
 const errorHandler = (
   err: unknown,
