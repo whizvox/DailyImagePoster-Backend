@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { ApiError, forebidden, unauthorized } from "../api-result";
 import { AuthLevel, guestAuth } from "../auth";
 import logger from "../logger";

@@ -126,7 +126,7 @@ router.post("/", async (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
     redditPostId: parseTrimmedString(query.reddit_post_id)!,
     redditCommentId: parseTrimmedString(query.reddit_comment_id) ?? null,
     imgurId: parseTrimmedString(query.imgur_id) ?? null,
-    uploadedAt: parseDate(query.uploaded) ?? new Date()
+    uploadedAt: parseDate(query.uploaded) ?? new Date(),
   });
   if (post.num < 1) {
     throw new ParseError("Must be a positive integer.", "num");

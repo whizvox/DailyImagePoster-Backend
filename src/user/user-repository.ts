@@ -16,7 +16,7 @@ const initialize = async (): Promise<void> => {
       logger.warn(`Created default admin: name=${user.name}, password=${password}`);
     }
   }
-}
+};
 
 const getAll = (): Promise<User[]> => {
   return User.findAll();

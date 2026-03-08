@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import fs from "node:fs";
 
 const ENVIRONMENT = process.env.ENVIRONMENT || "dev";
 const PORT = process.env.PORT || 8080;
@@ -11,7 +11,7 @@ const DEFAULT_ADMIN_CREATE = process.env.DEFAULT_ADMIN_CREATE || true;
 const DEFAULT_ADMIN_NAME = process.env.DEFAULT_ADMIN_NAME || "admin";
 
 const initalize = () => {
-  mkdirSync(WORKING_DIR, { recursive: true });
+  fs.mkdirSync(WORKING_DIR);
 };
 
 export {

@@ -35,10 +35,7 @@ const userAuthentication = () => {
         throw new ApiError(unauthorized());
       }
       logger.debug(`User has been authenticated: id=${user.id}, name=${user.name}`);
-      req.auth = new Authentication(
-        user,
-        type === "Basic" ? AuthLevel.BASIC : AuthLevel.BEARER,
-      );
+      req.auth = new Authentication(user, type === "Basic" ? AuthLevel.BASIC : AuthLevel.BEARER);
     } else {
       req.auth = new Authentication(null, AuthLevel.GUEST);
     }

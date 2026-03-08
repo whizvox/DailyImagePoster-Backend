@@ -21,6 +21,6 @@ class Authentication {
 
 const guestAuth = () => {
   return new Authentication(null, AuthLevel.GUEST);
-}
+};
 
 export { AuthLevel, Authentication, guestAuth };

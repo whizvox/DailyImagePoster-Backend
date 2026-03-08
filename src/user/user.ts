@@ -1,4 +1,10 @@
-import { DataTypes, InferAttributes, InferCreationAttributes, Model, CreationOptional } from "sequelize";
+import {
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+  CreationOptional,
+} from "sequelize";
 import sequelize from "../db/database";
 
 class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
@@ -12,31 +18,34 @@ class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare updatedAt: CreationOptional<Date>;
 }
 
-User.init({
-  id: {
-    type: DataTypes.UUIDV4,
-    primaryKey: true
+User.init(
+  {
+    id: {
+      type: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING(24),
+      unique: true,
+      allowNull: false,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    admin: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
+    accessToken: DataTypes.STRING,
+    tokenExpiresAt: DataTypes.DATE,
+    createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
   },
-  name: {
-    type: DataTypes.STRING,
-    unique: true,
-    allowNull: false
+  {
+    sequelize,
   },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  admin: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false
-  },
-  accessToken: DataTypes.STRING,
-  tokenExpiresAt: DataTypes.DATE,
-  createdAt: DataTypes.DATE,
-  updatedAt: DataTypes.DATE,
-}, {
-  sequelize
-});
+);
 
 interface TokenInfo {
   token: string;

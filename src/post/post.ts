@@ -1,4 +1,10 @@
-import { DataTypes, InferAttributes, InferCreationAttributes, Model, CreationOptional } from "sequelize";
+import {
+  DataTypes,
+  InferAttributes,
+  InferCreationAttributes,
+  Model,
+  CreationOptional,
+} from "sequelize";
 import sequelize from "../db/database";
 
 class Post extends Model<InferAttributes<Post>, InferCreationAttributes<Post>> {
@@ -23,7 +29,7 @@ class Post extends Model<InferAttributes<Post>, InferCreationAttributes<Post>> {
 Post.init(
   {
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.UUIDV4,
       primaryKey: true,
     },
     image: {
@@ -50,7 +56,7 @@ Post.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    comment: DataTypes.STRING,
+    comment: DataTypes.TEXT,
     imageNsfw: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -61,11 +67,11 @@ Post.init(
     },
     directSource: DataTypes.STRING,
     redditPostId: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(20),
       allowNull: false,
     },
-    redditCommentId: DataTypes.STRING,
-    imgurId: DataTypes.STRING,
+    redditCommentId: DataTypes.STRING(20),
+    imgurId: DataTypes.STRING(20),
     uploadedAt: {
       type: DataTypes.DATE,
       allowNull: false,
