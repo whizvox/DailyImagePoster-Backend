@@ -8,6 +8,7 @@ work-in-progress
 - [TypeScript](https://www.typescriptlang.org/)
 - [Express](http://expressjs.com/) (web framework)
 - [SQLite3](https://www.sqlite.org/) (local database)
+- [Sequelize](https://sequelize.org/) (SQL ORM)
 
 ## License
 

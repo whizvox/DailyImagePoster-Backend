@@ -2,10 +2,9 @@ import express from "express";
 import { Query } from "express-serve-static-core";
 import authorize from "../middleware/authorize";
 import userRepo from "./user-repository";
-import { ApiError, badRequest, created, internalServerError, ok } from "../api-result";
+import { ApiError, badRequest, created, ok } from "../api-result";
 import { AuthorizedRequest, AuthenticatedTypedQueryRequest, TypedQueryRequest } from "../util";
 import { AuthLevel } from "../auth";
-import logger from "../logger";
 
 interface StrLoginQuery extends Query {
   lifespan?: string;
@@ -19,11 +18,12 @@ interface StrCreateQuery extends Query {
 
 const router = express.Router();
 
-router.get("/nameunique", (req, res) => {
+router.get("/nameunique", async (req: TypedQueryRequest<{ name?: string }>, res) => {
   if (req.query.name === undefined) {
     throw new ApiError(badRequest("Missing required parameter: `name`"));
   }
-  res.send(ok(userRepo.isNameUnique(req.query.name as string)));
+  const unique = await userRepo.isNameUnique(req.query.name);
+  res.send(ok(unique));
 });
 
 router.get("/self", authorize(), (req: AuthorizedRequest, res) => {
@@ -34,7 +34,7 @@ router.get("/self", authorize(), (req: AuthorizedRequest, res) => {
 router.post(
   "/login",
   authorize({ level: AuthLevel.BASIC }),
-  (req: AuthenticatedTypedQueryRequest<StrLoginQuery>, res) => {
+  async (req: AuthenticatedTypedQueryRequest<StrLoginQuery>, res) => {
     const user = req.auth!.user!;
     let lifespan;
     if (req.query.lifespan === undefined) {
@@ -45,35 +45,35 @@ router.post(
         lifespan = 24;
       }
     }
-    const tokenInfo = userRepo.updateAccessToken(user.id, lifespan);
+    const tokenInfo = await userRepo.updateAccessToken(user.id, lifespan);
     res.send(ok(tokenInfo));
   },
 );
 
-router.post("/logout", authorize(), (req: AuthorizedRequest, res) => {
+router.post("/logout", authorize(), async (req: AuthorizedRequest, res) => {
   const user = req.auth!.user!;
-  const result = userRepo.revokeAccessToken(user.id);
+  const result = await userRepo.revokeAccessToken(user.id);
   res.send(ok(result));
 });
 
 router.get(
   "/other/:id",
   authorize({ admin: true }),
-  (req: express.Request<{ id: string }>, res: express.Response) => {
-    const user = userRepo.get(req.params.id);
+  async (req: express.Request<{ id: string }>, res: express.Response) => {
+    const user = await userRepo.get(req.params.id);
     res.send(ok(user));
   },
 );
 
-router.get("/other", authorize({ admin: true }), (req: express.Request, res: express.Response) => {
-  const users = userRepo.getAll();
+router.get("/other", authorize({ admin: true }), async (_req, res: express.Response) => {
+  const users = await userRepo.getAll();
   res.send(ok(users));
 });
 
 router.post(
   "/",
   authorize({ admin: true }),
-  (req: TypedQueryRequest<StrCreateQuery>, res: express.Response) => {
+  async (req: TypedQueryRequest<StrCreateQuery>, res: express.Response) => {
     let name: string;
     let password: string;
     let admin: boolean;
@@ -97,7 +97,7 @@ router.post(
       admin = req.query.admin !== "0";
     }
 
-    const result = userRepo.add(name, password, admin);
+    const result = await userRepo.add(name, password, admin);
     res.status(201).send(created(result));
   },
 );
@@ -105,8 +105,8 @@ router.post(
 router.delete(
   "/other/:id",
   authorize({ admin: true }),
-  (req: express.Request<{ id: string }>, res: express.Response) => {
-    const result = userRepo.remove(req.params.id);
+  async (req: express.Request<{ id: string }>, res: express.Response) => {
+    const result = await userRepo.remove(req.params.id);
     res.send(ok(result));
   },
 );

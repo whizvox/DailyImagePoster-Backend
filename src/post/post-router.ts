@@ -48,7 +48,7 @@ interface StrCreateQuery {
   reddit_post_id: string;
   reddit_comment_id: string;
   imgur_id: string;
-  created: string;
+  uploaded: string;
 }
 
 const parseSearchQuery = (query: StrSearchQuery): PostSearchQuery => {
@@ -73,41 +73,21 @@ const parseSearchQuery = (query: StrSearchQuery): PostSearchQuery => {
   } as PostSearchQuery;
 };
 
-const parseCreateQuery = (query: StrCreateQuery): Post => {
-  return new Post(
-    parseUuid(query.id, "id") ?? uuidv4(),
-    parseTrimmedString(query.image)!,
-    parseNumber(query.num, "num")!,
-    parseNumber(query.sub_num, "sub_num") ?? 0,
-    parseTrimmedString(query.title)!,
-    parseTrimmedString(query.artist)!,
-    parseTrimmedString(query.source)!,
-    parseTrimmedString(query.comment) || null,
-    parseBoolean(query.image_nsfw, "image_nsfw") ?? false,
-    parseBoolean(query.source_nsfw, "source_nsfw") ?? false,
-    parseTrimmedString(query.direct_source) || null,
-    parseTrimmedString(query.reddit_post_id)!,
-    parseTrimmedString(query.reddit_comment_id) || null,
-    parseTrimmedString(query.imgur_id) || null,
-    parseDate(query.created, "created") ?? new Date(),
-  );
-};
-
 const router = express.Router();
 
-router.get("/:id", (req, res) => {
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  const post = postRepo.get(id);
+  const post = await postRepo.get(id);
   res.send(ok(post));
 });
 
-router.get("/", (req: Request<{}, {}, {}, StrSearchQuery>, res) => {
+router.get("/", async (req: Request<{}, {}, {}, StrSearchQuery>, res) => {
   const query = parseSearchQuery(req.query);
-  const page = postRepo.getPage(query);
+  const page = await postRepo.getPage(query);
   res.send(ok(page));
 });
 
-router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
+router.post("/", async (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
   const query = req.query;
   const missing: string[] = [];
   if (query.image === undefined) {
@@ -131,8 +111,23 @@ router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
   if (missing.length > 0) {
     throw new ApiError(badRequest(`Missing required parameter(s): ${missing.join(", ")}`));
   }
-
-  const post = parseCreateQuery(query);
+  const post = Post.build({
+    id: parseUuid(query.id) ?? uuidv4(),
+    image: parseTrimmedString(query.image)!,
+    num: parseNumber(query.num, "num")!,
+    subNum: parseNumber(query.sub_num, "sub_num") ?? 0,
+    title: parseTrimmedString(query.title)!,
+    artist: parseTrimmedString(query.artist)!,
+    source: parseTrimmedString(query.source)!,
+    comment: parseTrimmedString(query.comment) ?? null,
+    imageNsfw: parseBoolean(query.image_nsfw, "image_nsfw") ?? false,
+    sourceNsfw: parseBoolean(query.source_nsfw, "source_nsfw") ?? false,
+    directSource: parseTrimmedString(query.direct_source) ?? null,
+    redditPostId: parseTrimmedString(query.reddit_post_id)!,
+    redditCommentId: parseTrimmedString(query.reddit_comment_id) ?? null,
+    imgurId: parseTrimmedString(query.imgur_id) ?? null,
+    uploadedAt: parseDate(query.uploaded) ?? new Date()
+  });
   if (post.num < 1) {
     throw new ParseError("Must be a positive integer.", "num");
   }
@@ -166,13 +161,13 @@ router.post("/", (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
   if (post.imgurId !== null && !postRepo.isImgurPostUnique(post.imgurId)) {
     throw new ApiError(conflict(`(imgur_id) ${post.imgurId}`));
   }
-  postRepo.add(post);
-  res.status(201).send(created(post));
+  const createdPost = await post.save();
+  res.status(201).send(created(createdPost));
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   const { id } = req.params;
-  const result = postRepo.remove(id);
+  const result = await postRepo.remove(id);
   res.send(ok(result));
 });
 

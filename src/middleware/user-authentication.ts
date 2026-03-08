@@ -8,7 +8,7 @@ import { Authentication, AuthLevel } from "../auth";
 import { AuthorizedRequest } from "../util";
 
 const userAuthentication = () => {
-  return (req: AuthorizedRequest, res: Response, next: NextFunction) => {
+  return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     const auth = req.header("Authorization");
     if (auth !== undefined) {
       const parts = auth.split(" ");
@@ -26,9 +26,9 @@ const userAuthentication = () => {
         }
         const username = authParts[0]!;
         const password = authParts[1]!;
-        user = userRepo.checkPassword(username, password);
+        user = await userRepo.checkPassword(username, password);
       } else if (type === "Bearer") {
-        user = userRepo.getFromToken(value!);
+        user = await userRepo.getFromToken(value!);
       }
       if (user === null) {
         // user's access has expired or is using an unsupported authorization type

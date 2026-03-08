@@ -1,53 +1,81 @@
-class Post {
-  id: string;
-  image: string;
-  num: number;
-  subNum: number;
-  title: string;
-  artist: string;
-  source: string;
-  comment: string | null;
-  imageNsfw: boolean;
-  sourceNsfw: boolean;
-  directSource: string | null;
-  redditPostId: string;
-  redditCommentId: string | null;
-  imgurId: string | null;
-  created: Date;
+import { DataTypes, InferAttributes, InferCreationAttributes, Model, CreationOptional } from "sequelize";
+import sequelize from "../db/database";
 
-  constructor(
-    id: string,
-    image: string,
-    num: number,
-    subNum: number,
-    title: string,
-    artist: string,
-    source: string,
-    comment: string | null,
-    imageNsfw: boolean,
-    sourceNsfw: boolean,
-    directSource: string | null,
-    redditPostId: string,
-    redditCommentId: string | null,
-    imgurId: string | null,
-    created: Date,
-  ) {
-    this.id = id;
-    this.image = image;
-    this.num = num;
-    this.subNum = subNum;
-    this.title = title;
-    this.artist = artist;
-    this.source = source;
-    this.comment = comment;
-    this.imageNsfw = imageNsfw;
-    this.sourceNsfw = sourceNsfw;
-    this.directSource = directSource;
-    this.redditPostId = redditPostId;
-    this.redditCommentId = redditCommentId;
-    this.imgurId = imgurId;
-    this.created = created;
-  }
+class Post extends Model<InferAttributes<Post>, InferCreationAttributes<Post>> {
+  declare id: string;
+  declare image: string;
+  declare num: number;
+  declare subNum: number;
+  declare title: string;
+  declare artist: string;
+  declare source: string;
+  declare comment: string | null;
+  declare imageNsfw: boolean;
+  declare sourceNsfw: boolean;
+  declare directSource: string | null;
+  declare redditPostId: string;
+  declare redditCommentId: string | null;
+  declare imgurId: string | null;
+  declare uploadedAt: Date;
+  declare createdAt: CreationOptional<Date>;
 }
+
+Post.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+    },
+    image: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    num: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    subNum: {
+      type: DataTypes.TINYINT,
+      allowNull: false,
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    artist: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    source: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    comment: DataTypes.STRING,
+    imageNsfw: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
+    sourceNsfw: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
+    directSource: DataTypes.STRING,
+    redditPostId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    redditCommentId: DataTypes.STRING,
+    imgurId: DataTypes.STRING,
+    uploadedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    createdAt: DataTypes.DATE,
+  },
+  {
+    sequelize,
+    updatedAt: false,
+  },
+);
 
 export default Post;

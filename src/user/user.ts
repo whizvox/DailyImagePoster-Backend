@@ -1,41 +1,46 @@
-class User {
-  id: string;
-  name: string;
-  admin: boolean;
-  created: Date;
-  tokenExpires: Date | null;
+import { DataTypes, InferAttributes, InferCreationAttributes, Model, CreationOptional } from "sequelize";
+import sequelize from "../db/database";
 
-  constructor(id: string, name: string, admin: boolean, created: Date, tokenExpires: Date | null) {
-    this.id = id;
-    this.name = name;
-    this.admin = admin;
-    this.created = created;
-    this.tokenExpires = tokenExpires;
-  }
+class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+  declare id: string;
+  declare name: string;
+  declare password: string;
+  declare admin: boolean;
+  declare accessToken: string | null;
+  declare tokenExpiresAt: Date | null;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
-class SecretUser extends User {
-  password: string;
-  accessToken: string | null;
-
-  constructor(
-    id: string,
-    name: string,
-    password: string,
-    admin: boolean,
-    created: Date,
-    accessToken: string | null,
-    tokenExpires: Date | null,
-  ) {
-    super(id, name, admin, created, tokenExpires);
-    this.password = password;
-    this.accessToken = accessToken;
-  }
-}
+User.init({
+  id: {
+    type: DataTypes.UUIDV4,
+    primaryKey: true
+  },
+  name: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  admin: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false
+  },
+  accessToken: DataTypes.STRING,
+  tokenExpiresAt: DataTypes.DATE,
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE,
+}, {
+  sequelize
+});
 
 interface TokenInfo {
   token: string;
   expires: Date;
 }
 
-export { User, SecretUser, TokenInfo };
+export { User, TokenInfo };

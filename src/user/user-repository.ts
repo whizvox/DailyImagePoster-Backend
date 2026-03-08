@@ -1,123 +1,54 @@
 import { v4 as uuidv4 } from "uuid";
-import db from "../db/database";
-import { User, SecretUser, TokenInfo } from "./user";
+import { User, TokenInfo } from "./user";
 import logger from "../logger";
 import { generateAccessToken } from "./access-token";
 import { DEFAULT_ADMIN_CREATE, DEFAULT_ADMIN_NAME, TOKEN_SALT_ROUNDS } from "../config";
-import { compareSync, hashSync } from "bcrypt";
+import { compare, hashSync } from "bcrypt";
 import { randomBytes } from "node:crypto";
 
-const SQL_CREATE =
-  "CREATE TABLE IF NOT EXISTS users(" +
-  "id CHAR(36) PRIMARY KEY, " +
-  "name VARCHAR(32) NOT NULL UNIQUE, " +
-  "password TEXT NOT NULL, " +
-  "admin BIT NOT NULL, " +
-  "created TEXT NOT NULL, " +
-  "access_token CHAR(64), " +
-  "token_expires TEXT)";
-
-const SQL_SELECT_ALL = "SELECT id,name,admin,created,token_expires FROM users";
-const SQL_SELECT_BY_ID = `${SQL_SELECT_ALL} WHERE id = ?`;
-const SQL_SELECT_BY_TOKEN = `${SQL_SELECT_ALL} WHERE access_token = ?`;
-const SQL_SELECT_ALL_SECRET = "SELECT id,name,password,admin,created,access_token,token_expires FROM users";
-const SQL_SELECT_BY_NAME = `${SQL_SELECT_ALL_SECRET} WHERE name = ?`;
-
-const SQL_COUNT_ALL = "SELECT COUNT(1) AS count FROM users";
-const SQL_COUNT_NAME = `${SQL_COUNT_ALL} WHERE name = ?`;
-
-const SQL_INSERT =
-  "INSERT INTO users (id,name,password,admin,created,access_token,token_expires) VALUES (?,?,?,?,?,?,?)";
-
-const SQL_UPDATE_TOKEN = "UPDATE users SET access_token = ?, token_expires = ? WHERE id = ?";
-
-const SQL_DELETE = "DELETE FROM users WHERE id = ?";
-
-const parseUserRow = (row: unknown): User => {
-  const $ = row as {
-    id: string;
-    name: string;
-    admin: number;
-    created: string;
-    token_expires: string | null;
-  };
-  return new User(
-    $.id,
-    $.name,
-    $.admin === 1,
-    new Date($.created),
-    $.token_expires === null ? null : new Date($.token_expires),
-  );
-};
-
-const parseSecretRow = (row: unknown): SecretUser => {
-  const $ = row as {
-    id: string;
-    name: string;
-    password: string;
-    admin: number;
-    created: string;
-    token_expires: string | null;
-  };
-  return new SecretUser(
-    $.id,
-    $.name,
-    $.password,
-    $.admin === 1,
-    new Date($.created),
-    null,
-    $.token_expires === null ? null : new Date($.token_expires),
-  );
-};
-
-const parseCount = (row: unknown): number => {
-  return (row as { count: number }).count;
-};
-
-const initialize = () => {
-  db.execute(SQL_CREATE);
-  if (DEFAULT_ADMIN_CREATE && isNameUnique(DEFAULT_ADMIN_NAME)) {
-    const password = randomBytes(16).toString("hex");
-    const user = add(DEFAULT_ADMIN_NAME, password, true);
-    logger.warn(`Created default admin: name=${user.name}, password=${password}`);
+const initialize = async (): Promise<void> => {
+  await User.sync();
+  if (DEFAULT_ADMIN_CREATE) {
+    const prevAdmin = await User.findOne({ where: { name: DEFAULT_ADMIN_NAME } });
+    if (prevAdmin === null) {
+      const password = randomBytes(12).toString("hex");
+      const user = await add(DEFAULT_ADMIN_NAME, password, true);
+      logger.warn(`Created default admin: name=${user.name}, password=${password}`);
+    }
   }
+}
+
+const getAll = (): Promise<User[]> => {
+  return User.findAll();
 };
 
-const iterate = (consumer: (user: User) => void) => {
-  db.iterate(SQL_SELECT_ALL, parseUserRow, consumer);
+const get = (id: string): Promise<User | null> => {
+  return User.findOne({ where: { id } });
 };
 
-const getAll = (): User[] => {
-  return db.gather(SQL_SELECT_ALL, parseUserRow);
-};
-
-const get = (id: string): User | null => {
-  return db.query(SQL_SELECT_BY_ID, parseUserRow, id);
-};
-
-const checkPassword = (name: string, password: string): User | null => {
-  const user = db.query(SQL_SELECT_BY_NAME, parseSecretRow, name);
+const checkPassword = async (name: string, password: string): Promise<User | null> => {
+  const user = await User.findOne({ where: { name } });
   if (user !== null) {
-    if (compareSync(password, user.password)) {
-      return new User(user.id, user.name, user.admin, user.created, user.tokenExpires);
+    if (await compare(password, user.password)) {
+      return user;
     }
   }
   return null;
 };
 
-const getFromToken = (token: string): User | null => {
-  const user = db.query(SQL_SELECT_BY_TOKEN, parseUserRow, token);
+const getFromToken = async (accessToken: string): Promise<User | null> => {
+  const user = await User.findOne({ where: { accessToken } });
   if (user !== null) {
-    if (user.tokenExpires === null) {
+    if (user.tokenExpiresAt === null) {
       logger.warn(
         `User has an unset token expiration, token will be automatically revoked: id=${user.id}, name=${user.name}`,
       );
-      db.execute(SQL_UPDATE_TOKEN, null, null);
-    } else if (user.tokenExpires.getDate() < new Date().getDate()) {
+      user.update({ accessToken: null, tokenExpiresAt: null });
+    } else if (user.tokenExpiresAt.getDate() < new Date().getDate()) {
       logger.info(
         `User's access token has expired and will be automatically revoked: id=${user.id}, name=${user.name}`,
       );
-      db.execute(SQL_UPDATE_TOKEN, null, null);
+      user.update({ accessToken: null, tokenExpiresAt: null });
     } else {
       return user;
     }
@@ -125,70 +56,52 @@ const getFromToken = (token: string): User | null => {
   return null;
 };
 
-const countAll = (): number => {
-  return db.query(SQL_COUNT_ALL, parseCount) ?? 0;
+const isNameUnique = async (name: string): Promise<boolean> => {
+  return (await User.count({ where: { name } })) === 0;
 };
 
-const isNameUnique = (name: string): boolean => {
-  return db.query(SQL_COUNT_NAME, parseCount, name) === 0;
-};
-
-const add = (name: string, password: string, admin: boolean): User => {
-  const user = new SecretUser(
-    uuidv4(),
+const add = async (name: string, password: string, admin: boolean): Promise<User> => {
+  const user = await User.create({
+    id: uuidv4(),
     name,
-    hashSync(password, TOKEN_SALT_ROUNDS),
+    password: hashSync(password, TOKEN_SALT_ROUNDS),
     admin,
-    new Date(),
-    null,
-    null,
-  );
+  });
   logger.info(`Added new user: id=${user.id}, name=${name}, admin=${admin}`);
-  db.execute(
-    SQL_INSERT,
-    user.id,
-    user.name,
-    user.password,
-    user.admin,
-    user.created,
-    user.accessToken,
-    user.tokenExpires,
-  );
-  return new User(user.id, user.name, user.admin, user.created, user.tokenExpires);
+  return user;
 };
 
-const updateAccessToken = (id: string, lifespan: number = 24): TokenInfo | null => {
-  const user = get(id);
+const updateAccessToken = async (id: string, lifespan: number = 24): Promise<TokenInfo | null> => {
+  const user = await get(id);
   if (user === null) {
     return null;
   }
   if (lifespan <= 0) {
     lifespan = 1;
   }
-  const token = generateAccessToken();
-  const expires = new Date();
-  expires.setDate(expires.getDate() + lifespan / 24);
-  logger.info(`User ${user.name} has been given an access token that expires at ${expires}`);
-  db.execute(SQL_UPDATE_TOKEN, token, expires, id);
-  return { token, expires } as TokenInfo;
+  const accessToken = generateAccessToken();
+  const tokenExpiresAt = new Date();
+  tokenExpiresAt.setDate(tokenExpiresAt.getDate() + lifespan / 24);
+  await user.update({ accessToken, tokenExpiresAt });
+  logger.info(`User ${user.name} has been given an access token that expires at ${tokenExpiresAt}`);
+  return { token: accessToken, expires: tokenExpiresAt } as TokenInfo;
 };
 
-const revokeAccessToken = (id: string): boolean => {
-  return db.execute(SQL_UPDATE_TOKEN, null, null, id).changes > 0;
+const revokeAccessToken = async (id: string): Promise<boolean> => {
+  // why does this return a tuple?
+  return (await User.update({ accessToken: null, tokenExpiresAt: null }, { where: { id } }))[0] > 0;
 };
 
-const remove = (id: string): boolean => {
-  return db.execute(SQL_DELETE, id).changes > 0;
+const remove = async (id: string): Promise<boolean> => {
+  return (await User.destroy({ where: { id } })) > 0;
 };
 
 export default {
   initialize,
-  iterate,
   getAll,
   get,
   checkPassword,
   getFromToken,
-  countAll,
   isNameUnique,
   add,
   updateAccessToken,
