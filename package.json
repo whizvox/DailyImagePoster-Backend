@@ -16,6 +16,7 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/express-fileupload": "^1.5.1",
     "@types/node": "^25.3.3",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
@@ -29,6 +30,8 @@
     "@types/express-serve-static-core": "^5.1.1",
     "bcrypt": "^6.0.0",
     "express": "^5.2.1",
+    "express-fileupload": "^1.5.2",
+    "imghash": "^1.1.2",
     "pino": "^10.3.1",
     "pino-pretty": "^13.1.3",
     "sequelize": "^6.37.8",

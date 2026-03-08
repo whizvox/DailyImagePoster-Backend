@@ -9,9 +9,11 @@ const TOKEN_LENGTH = Number(process.env.TOKEN_LENGTH) || 32;
 const TOKEN_SALT_ROUNDS = Number(process.env.TOKEN_SALT_ROUNDS) || 10;
 const DEFAULT_ADMIN_CREATE = process.env.DEFAULT_ADMIN_CREATE || true;
 const DEFAULT_ADMIN_NAME = process.env.DEFAULT_ADMIN_NAME || "admin";
+const MAX_IMAGE_SIZE = Number(process.env.MAX_IMAGE_SIZE) || 20 * 1024 * 1024; // 20 MB
+const IMAGE_HASH_BITS = Number(process.env.IMAGE_HASH_BITS) || 16;
 
 const initalize = () => {
-  fs.mkdirSync(WORKING_DIR);
+  fs.mkdirSync(WORKING_DIR, { recursive: true });
 };
 
 export {
@@ -24,5 +26,7 @@ export {
   TOKEN_SALT_ROUNDS,
   DEFAULT_ADMIN_CREATE,
   DEFAULT_ADMIN_NAME,
+  MAX_IMAGE_SIZE,
+  IMAGE_HASH_BITS,
   initalize,
 };

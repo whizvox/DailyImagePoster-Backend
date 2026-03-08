@@ -3,7 +3,7 @@ import { Query } from "express-serve-static-core";
 import authorize from "../middleware/authorize";
 import userRepo from "./user-repository";
 import { ApiError, badRequest, created, ok } from "../api-result";
-import { AuthorizedRequest, AuthenticatedTypedQueryRequest, TypedQueryRequest } from "../util";
+import { AuthorizedRequest, AuthorizedTypedQueryRequest, TypedQueryRequest } from "../util";
 import { AuthLevel } from "../auth";
 
 interface StrLoginQuery extends Query {
@@ -34,7 +34,7 @@ router.get("/self", authorize(), (req: AuthorizedRequest, res) => {
 router.post(
   "/login",
   authorize({ level: AuthLevel.BASIC }),
-  async (req: AuthenticatedTypedQueryRequest<StrLoginQuery>, res) => {
+  async (req: AuthorizedTypedQueryRequest<StrLoginQuery>, res) => {
     const user = req.auth!.user!;
     let lifespan;
     if (req.query.lifespan === undefined) {
