@@ -21,6 +21,15 @@ router.get("/info", async (req: TypedQueryRequest<{ page?: string; limit?: strin
   res.send(ok(result));
 });
 
+router.post("/similar", async (req, res) => {
+  if (!req.files || !req.files.image) {
+    throw new ApiError(badRequest("Missing required parameter: `image`"));
+  }
+  const imageFile = req.files.image as UploadedFile;
+  const similarImages = await imageRepo.findSimilarImages(imageFile);
+  res.send(ok(similarImages));
+});
+
 router.get("/:id", async (req, res) => {
   const image = await imageRepo.get(req.params.id);
   if (image === null) {

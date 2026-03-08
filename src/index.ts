@@ -29,7 +29,7 @@ app.use(
     limits: { fileSize: MAX_IMAGE_SIZE, files: 1 },
     abortOnLimit: true,
     limitHandler: fileSizeLimitHandler, // TODO doesn't seem to do anything
-    createParentPath: true
+    createParentPath: true,
   }),
 );
 app.use(userAuthentication());
