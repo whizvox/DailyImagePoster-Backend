@@ -1,4 +1,4 @@
-import express, { Request } from "express";
+import { Router, Request, Response } from "express";
 import postRepo from "./post-repository";
 import PostSearchQuery from "./post-search-query";
 import Post from "./post";
@@ -12,8 +12,11 @@ import {
   parseUuid,
   parseTrimmedString,
 } from "../query";
+import authorize from "../middleware/authorize";
+import { TypedQueryRequest } from "../util";
+import { Query } from "express-serve-static-core";
 
-interface StrSearchQuery {
+interface StrSearchQuery extends Query {
   page: string;
   limit: string;
   min_num: string;
@@ -33,7 +36,7 @@ interface StrSearchQuery {
   created_before: string;
 }
 
-interface StrCreateQuery {
+interface StrCreateQuery extends Query {
   id: string;
   image: string;
   num: string;
@@ -73,7 +76,7 @@ const parseSearchQuery = (query: StrSearchQuery): PostSearchQuery => {
   } as PostSearchQuery;
 };
 
-const router = express.Router();
+const router = Router();
 
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
@@ -81,13 +84,13 @@ router.get("/:id", async (req, res) => {
   res.send(ok(post));
 });
 
-router.get("/", async (req: Request<{}, {}, {}, StrSearchQuery>, res) => {
+router.get("/", async (req: TypedQueryRequest<StrSearchQuery>, res: Response) => {
   const query = parseSearchQuery(req.query);
   const page = await postRepo.getPage(query);
   res.send(ok(page));
 });
 
-router.post("/", async (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
+router.post("/", authorize(), async (req: TypedQueryRequest<StrCreateQuery>, res: Response) => {
   const query = req.query;
   const missing: string[] = [];
   if (query.image === undefined) {
@@ -165,7 +168,7 @@ router.post("/", async (req: Request<{}, {}, {}, StrCreateQuery>, res) => {
   res.status(201).send(created(createdPost));
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authorize(), async (req: Request<{ id: string }>, res) => {
   const { id } = req.params;
   const result = await postRepo.remove(id);
   res.send(ok(result));

@@ -13,6 +13,7 @@ import userRepo from "./user/user-repository";
 import postRepo from "./post/post-repository";
 import fileSizeLimitHandler from "./middleware/file-size-limit-handler";
 import imageRepo from "./image/image-repository";
+import notFoundHandler from "./middleware/not-found-handler";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use(userAuthentication());
 app.use("/post", postRouter);
 app.use("/user", userRouter);
 app.use("/image", imageRouter);
+app.use(notFoundHandler());
 app.use(errorHandler());
 
 app.listen(PORT, async () => {
