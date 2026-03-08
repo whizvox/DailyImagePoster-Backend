@@ -1,38 +1,49 @@
-import express from "express";
+import { Response, NextFunction } from "express";
+import { Buffer } from "node:buffer";
 import { ApiError, unauthorized } from "../api-result";
 import { User } from "../user/user";
 import userRepo from "../user/user-repository";
+import logger from "../logger";
+import { Authentication, AuthLevel } from "../auth";
+import { AuthorizedRequest } from "../util";
 
-interface AuthenticatedRequest extends express.Request {
-  user: User | null
-}
-
-const userAuthentication = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction,
-) => {
-  const auth = req.header("X-Authorization");
-  if (auth !== undefined) {
-    const parts = auth.split(" ");
-    if (parts.length !== 2) {
-      throw new ApiError(unauthorized());
-    }
-    const type = parts[0];
-    const value = parts[1];
-    if (type === "Token") {
-      const user = userRepo.getFromToken(value!);
-      if (user === null) {
+const userAuthentication = () => {
+  return (req: AuthorizedRequest, res: Response, next: NextFunction) => {
+    const auth = req.header("Authorization");
+    if (auth !== undefined) {
+      const parts = auth.split(" ");
+      if (parts.length !== 2) {
         throw new ApiError(unauthorized());
       }
-      (req as AuthenticatedRequest).user = user;
+      const type = parts[0];
+      let value = parts[1];
+      let user: User | null = null;
+      if (type === "Basic") {
+        value = Buffer.from(value!, "base64").toString()!;
+        const authParts = value.split(":", 2);
+        if (authParts.length !== 2) {
+          throw new ApiError(unauthorized());
+        }
+        const username = authParts[0]!;
+        const password = authParts[1]!;
+        user = userRepo.checkPassword(username, password);
+      } else if (type === "Bearer") {
+        user = userRepo.getFromToken(value!);
+      }
+      if (user === null) {
+        // user's access has expired or is using an unsupported authorization type
+        throw new ApiError(unauthorized());
+      }
+      logger.debug(`User has been authenticated: id=${user.id}, name=${user.name}`);
+      req.auth = new Authentication(
+        user,
+        type === "Basic" ? AuthLevel.BASIC : AuthLevel.BEARER,
+      );
     } else {
-      throw new ApiError(unauthorized());
+      req.auth = new Authentication(null, AuthLevel.GUEST);
     }
-  } else {
-    (req as AuthenticatedRequest).user = null;
-  }
-  next();
+    next();
+  };
 };
 
-export { userAuthentication, AuthenticatedRequest };
+export default userAuthentication;

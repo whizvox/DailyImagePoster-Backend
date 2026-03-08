@@ -4,7 +4,7 @@ import { ParseError } from "../query";
 import logger from "../logger";
 import { SEND_SERVER_ERROR } from "../config";
 
-const errorHandler = (
+const errorHandler = () => (
   err: unknown,
   req: express.Request,
   res: express.Response,
