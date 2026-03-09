@@ -1,13 +1,13 @@
 import { UploadedFile } from "express-fileupload";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
-import Image from "./image";
-import { IMAGE_HASH_BITS, WORKING_DIR } from "../config";
+import Image from "./image.ts";
+import { IMAGE_HASH_BITS, WORKING_DIR } from "../config.ts";
 import { v4 as uuidv4 } from "uuid";
-import logger from "../logger";
+import logger from "../logger.ts";
 import imghash from "imghash";
-import Page from "../db/page";
-import SimilarImageEntry from "./similar-image";
+import Page from "../db/page.ts";
+import SimilarImageEntry from "./similar-image.ts";
 import leven from "leven";
 
 const initialize = async (): Promise<void> => {

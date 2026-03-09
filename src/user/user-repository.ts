@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
-import { User, TokenInfo } from "./user";
-import logger from "../logger";
-import { generateAccessToken } from "./access-token";
-import { DEFAULT_ADMIN_CREATE, DEFAULT_ADMIN_NAME, TOKEN_SALT_ROUNDS } from "../config";
+import { User, TokenInfo } from "./user.ts";
+import logger from "../logger.ts";
+import { generateAccessToken } from "./access-token.ts";
+import { DEFAULT_ADMIN_CREATE, DEFAULT_ADMIN_NAME, TOKEN_SALT_ROUNDS } from "../config.ts";
 import { compare, hashSync } from "bcrypt";
 import { randomBytes } from "node:crypto";
 

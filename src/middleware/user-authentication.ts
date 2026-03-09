@@ -1,11 +1,11 @@
 import { Response, NextFunction } from "express";
 import { Buffer } from "node:buffer";
-import { ApiError, unauthorized } from "../api-result";
-import { User } from "../user/user";
-import userRepo from "../user/user-repository";
-import logger from "../logger";
-import { Authentication, AuthLevel } from "../auth";
-import { AuthorizedRequest } from "../util";
+import { ApiError, unauthorized } from "../api-result.ts";
+import { User } from "../user/user.ts";
+import userRepo from "../user/user-repository.ts";
+import logger from "../logger.ts";
+import { Authentication, AuthLevel } from "../auth.ts";
+import { AuthorizedRequest } from "../util.ts";
 
 const userAuthentication = () => {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {

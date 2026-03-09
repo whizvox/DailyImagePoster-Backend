@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import pino from "pino";
 import PinoPretty from "pino-pretty";
-import { LOG_LEVEL, WORKING_DIR } from "./config";
+import { LOG_LEVEL, WORKING_DIR } from "./config.ts";
 
 const logger = pino(
   { level: LOG_LEVEL },

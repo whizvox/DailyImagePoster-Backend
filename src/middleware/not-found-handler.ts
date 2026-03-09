@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { notFound } from "../api-result";
+import { notFound } from "../api-result.ts";
 
 const notFoundHandler = () => {
   return (req: Request, res: Response, _next: NextFunction) => {

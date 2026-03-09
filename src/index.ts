@@ -1,19 +1,19 @@
-import { MAX_IMAGE_SIZE, PORT, initalize as initConfig } from "./config";
+import { MAX_IMAGE_SIZE, PORT, initalize as initConfig } from "./config.ts";
 initConfig();
 
 import express, { json, Request, Response, urlencoded } from "express";
 import fileUpload from "express-fileupload";
-import logger from "./logger";
-import postRouter from "./post/post-router";
-import userRouter from "./user/user-router";
-import imageRouter from "./image/image-router";
-import errorHandler from "./middleware/error-handler";
-import userAuthentication from "./middleware/user-authentication";
-import userRepo from "./user/user-repository";
-import postRepo from "./post/post-repository";
-import fileSizeLimitHandler from "./middleware/file-size-limit-handler";
-import imageRepo from "./image/image-repository";
-import notFoundHandler from "./middleware/not-found-handler";
+import logger from "./logger.ts";
+import postRouter from "./post/post-router.ts";
+import userRouter from "./user/user-router.ts";
+import imageRouter from "./image/image-router.ts";
+import errorHandler from "./middleware/error-handler.ts";
+import userAuthentication from "./middleware/user-authentication.ts";
+import userRepo from "./user/user-repository.ts";
+import postRepo from "./post/post-repository.ts";
+import fileSizeLimitHandler from "./middleware/file-size-limit-handler.ts";
+import imageRepo from "./image/image-repository.ts";
+import notFoundHandler from "./middleware/not-found-handler.ts";
 
 const app = express();
 

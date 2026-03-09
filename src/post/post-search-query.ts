@@ -1,4 +1,4 @@
-import PageQuery from "../db/page-query";
+import PageQuery from "../db/page-query.ts";
 
 interface PostSearchQuery extends PageQuery {
   min_num: number;

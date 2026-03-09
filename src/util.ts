@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { Query } from "express-serve-static-core";
-import { Authentication } from "./auth";
+import { Authentication } from "./auth.ts";
 
 interface TypedQueryRequest<T extends Query> extends Request {
   query: T;

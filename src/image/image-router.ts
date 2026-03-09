@@ -1,10 +1,10 @@
 import { Router, Request, Response } from "express";
-import authorize from "../middleware/authorize";
-import { ApiError, badRequest, notFound, ok } from "../api-result";
+import authorize from "../middleware/authorize.ts";
+import { ApiError, badRequest, notFound, ok } from "../api-result.ts";
 import { UploadedFile } from "express-fileupload";
-import { TypedQueryRequest } from "../util";
-import imageRepo from "./image-repository";
-import { parseNumber } from "../query";
+import { TypedQueryRequest } from "../util.ts";
+import imageRepo from "./image-repository.ts";
+import { parseNumber } from "../query.ts";
 import path from "node:path";
 
 const router = Router();

@@ -1,8 +1,8 @@
 import { Attributes, col, FindOptions, Op, WhereAttributeHash, WhereOptions } from "sequelize";
-import Page from "../db/page";
-import Post from "./post";
-import PostSearchQuery from "./post-search-query";
-import sequelize from "../db/database";
+import Page from "../db/page.ts";
+import Post from "./post.ts";
+import PostSearchQuery from "./post-search-query.ts";
+import sequelize from "../db/database.ts";
 
 const initialize = async (): Promise<void> => {
   await Post.sync();

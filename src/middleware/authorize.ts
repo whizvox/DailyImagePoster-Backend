@@ -1,8 +1,8 @@
 import { Response, NextFunction } from "express";
-import { ApiError, forebidden, unauthorized } from "../api-result";
-import { AuthLevel, guestAuth } from "../auth";
-import logger from "../logger";
-import { AuthorizedRequest } from "../util";
+import { ApiError, forebidden, unauthorized } from "../api-result.ts";
+import { AuthLevel, guestAuth } from "../auth.ts";
+import logger from "../logger.ts";
+import { AuthorizedRequest } from "../util.ts";
 
 interface AuthorizeOptions {
   level?: AuthLevel;

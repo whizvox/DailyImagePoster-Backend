@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import { contentTooLarge } from "../api-result";
-import { formatBytes } from "../util";
-import { MAX_IMAGE_SIZE } from "../config";
+import { contentTooLarge } from "../api-result.ts";
+import { formatBytes } from "../util.ts";
+import { MAX_IMAGE_SIZE } from "../config.ts";
 
 const fileSizeLimitHandler = () => {
   return (req: Request, res: Response, next: NextFunction) => {

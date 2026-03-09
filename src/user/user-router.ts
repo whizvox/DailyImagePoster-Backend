@@ -1,10 +1,10 @@
 import express from "express";
 import { Query } from "express-serve-static-core";
-import authorize from "../middleware/authorize";
-import userRepo from "./user-repository";
-import { ApiError, badRequest, created, ok } from "../api-result";
-import { AuthorizedRequest, AuthorizedTypedQueryRequest, TypedQueryRequest } from "../util";
-import { AuthLevel } from "../auth";
+import authorize from "../middleware/authorize.ts";
+import userRepo from "./user-repository.ts";
+import { ApiError, badRequest, created, ok } from "../api-result.ts";
+import { AuthorizedRequest, AuthorizedTypedQueryRequest, TypedQueryRequest } from "../util.ts";
+import { AuthLevel } from "../auth.ts";
 
 interface StrLoginQuery extends Query {
   lifespan?: string;

@@ -1,9 +1,9 @@
 import { Router, Request, Response } from "express";
-import postRepo from "./post-repository";
-import PostSearchQuery from "./post-search-query";
-import Post from "./post";
+import postRepo from "./post-repository.ts";
+import PostSearchQuery from "./post-search-query.ts";
+import Post from "./post.ts";
 import { v4 as uuidv4 } from "uuid";
-import { ApiError, badRequest, conflict, created, ok } from "../api-result";
+import { ApiError, badRequest, conflict, created, ok } from "../api-result.ts";
 import {
   parseNumber,
   parseBoolean,
@@ -11,9 +11,9 @@ import {
   ParseError,
   parseUuid,
   parseTrimmedString,
-} from "../query";
-import authorize from "../middleware/authorize";
-import { TypedQueryRequest } from "../util";
+} from "../query.ts";
+import authorize from "../middleware/authorize.ts";
+import { TypedQueryRequest } from "../util.ts";
 import { Query } from "express-serve-static-core";
 
 interface StrSearchQuery extends Query {

@@ -1,13 +1,15 @@
-import { User } from "./user/user";
+import { User } from "./user/user.ts";
 
-enum AuthLevel {
+const AuthLevel = {
   // not logged in
-  GUEST = 1,
+  GUEST: 1,
   // using Basic authorization (username:password)
-  BASIC,
+  BASIC: 2,
   // using access token (default)
-  BEARER,
-}
+  BEARER: 3,
+} as const;
+
+type AuthLevel = (typeof AuthLevel)[keyof typeof AuthLevel];
 
 class Authentication {
   user: User | null;

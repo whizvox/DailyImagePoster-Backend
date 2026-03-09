@@ -12,7 +12,6 @@
   "keywords": [],
   "author": "whizvox",
   "license": "MIT",
-  "type": "commonjs",
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",

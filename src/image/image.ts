@@ -5,7 +5,7 @@ import {
   InferCreationAttributes,
   Model,
 } from "sequelize";
-import sequelize from "../db/database";
+import sequelize from "../db/database.ts";
 
 class Image extends Model<InferAttributes<Image>, InferCreationAttributes<Image>> {
   declare id: string;

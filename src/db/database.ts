@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
-import logger from "../logger";
+import logger from "../logger.ts";
 import path from "node:path";
-import { WORKING_DIR } from "../config";
+import { WORKING_DIR } from "../config.ts";
 
 const sequelizeLogger = logger.child({ module: "Sequelize" });
 
