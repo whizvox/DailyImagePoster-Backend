@@ -1,13 +1,13 @@
 import { Sequelize } from "sequelize";
 import logger from "../logger.ts";
 import path from "node:path";
-import { WORKING_DIR } from "../config.ts";
+import { config } from "../config.ts";
 
 const sequelizeLogger = logger.child({ module: "Sequelize" });
 
 const sequelize = new Sequelize({
   dialect: "sqlite",
-  storage: path.join(WORKING_DIR, "dailyimageposter.db"),
+  storage: path.join(config.WORKING_DIR, "dailyimageposter.db"),
   logging: (msg) => sequelizeLogger.debug(msg),
 });
 

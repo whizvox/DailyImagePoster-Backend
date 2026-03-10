@@ -52,4 +52,4 @@ interface TokenInfo {
   expires: Date;
 }
 
-export { User, TokenInfo };
+export { User, type TokenInfo };

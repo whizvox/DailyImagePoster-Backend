@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ApiError, badRequest, internalServerError } from "../api-result.ts";
 import { ParseError } from "../query.ts";
 import logger from "../logger.ts";
-import { SEND_SERVER_ERROR } from "../config.ts";
+import { config } from "../config.ts";
 
 const errorHandler = () => (err: unknown, req: Request, res: Response, next: NextFunction) => {
   if (err instanceof ApiError) {
@@ -29,7 +29,7 @@ const errorHandler = () => (err: unknown, req: Request, res: Response, next: Nex
   } else {
     logger.warn(`Intercepted unknown server error - ${err}`);
   }
-  const result = internalServerError(SEND_SERVER_ERROR ? `${err}` : "Unexpected error!");
+  const result = internalServerError(config.SEND_SERVER_ERROR ? `${err}` : "Unexpected error!");
   res.status(result.status).send(result);
 };
 

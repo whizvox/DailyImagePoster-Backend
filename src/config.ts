@@ -16,7 +16,7 @@ const initalize = () => {
   fs.mkdirSync(WORKING_DIR, { recursive: true });
 };
 
-export {
+const config = {
   ENVIRONMENT,
   PORT,
   WORKING_DIR,
@@ -28,5 +28,6 @@ export {
   DEFAULT_ADMIN_NAME,
   MAX_IMAGE_SIZE,
   IMAGE_HASH_BITS,
-  initalize,
 };
+
+export { initalize, config };

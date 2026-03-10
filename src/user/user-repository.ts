@@ -2,17 +2,17 @@ import { v4 as uuidv4 } from "uuid";
 import { User, TokenInfo } from "./user.ts";
 import logger from "../logger.ts";
 import { generateAccessToken } from "./access-token.ts";
-import { DEFAULT_ADMIN_CREATE, DEFAULT_ADMIN_NAME, TOKEN_SALT_ROUNDS } from "../config.ts";
+import { config } from "../config.ts";
 import { compare, hashSync } from "bcrypt";
 import { randomBytes } from "node:crypto";
 
 const initialize = async (): Promise<void> => {
   await User.sync();
-  if (DEFAULT_ADMIN_CREATE) {
-    const prevAdmin = await User.findOne({ where: { name: DEFAULT_ADMIN_NAME } });
+  if (config.DEFAULT_ADMIN_CREATE) {
+    const prevAdmin = await User.findOne({ where: { name: config.DEFAULT_ADMIN_NAME } });
     if (prevAdmin === null) {
       const password = randomBytes(12).toString("hex");
-      const user = await add(DEFAULT_ADMIN_NAME, password, true);
+      const user = await add(config.DEFAULT_ADMIN_NAME, password, true);
       logger.warn(`Created default admin: name=${user.name}, password=${password}`);
     }
   }
@@ -64,7 +64,7 @@ const add = async (name: string, password: string, admin: boolean): Promise<User
   const user = await User.create({
     id: uuidv4(),
     name,
-    password: hashSync(password, TOKEN_SALT_ROUNDS),
+    password: hashSync(password, config.TOKEN_SALT_ROUNDS),
     admin,
   });
   logger.info(`Added new user: id=${user.id}, name=${name}, admin=${admin}`);

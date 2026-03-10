@@ -36,9 +36,9 @@ const sanitizeDirectoryName = (dir: string): string => {
 };
 
 export {
-  TypedQueryRequest,
-  AuthorizedRequest,
-  AuthorizedTypedQueryRequest,
+  type TypedQueryRequest,
+  type AuthorizedRequest,
+  type AuthorizedTypedQueryRequest,
   formatBytes,
   sanitizeDirectoryName,
 };

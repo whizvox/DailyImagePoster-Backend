@@ -2,7 +2,7 @@ import { UploadedFile } from "express-fileupload";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
 import Image from "./image.ts";
-import { IMAGE_HASH_BITS, WORKING_DIR } from "../config.ts";
+import { config } from "../config.ts";
 import { v4 as uuidv4 } from "uuid";
 import logger from "../logger.ts";
 import imghash from "imghash";
@@ -12,11 +12,11 @@ import leven from "leven";
 
 const initialize = async (): Promise<void> => {
   await Image.sync();
-  await mkdir(path.join(WORKING_DIR, "images"), { recursive: true });
+  await mkdir(path.join(config.WORKING_DIR, "images"), { recursive: true });
 };
 
 const getImageFilePath = (name: string): string => {
-  return path.join(WORKING_DIR, "images", name);
+  return path.join(config.WORKING_DIR, "images", name);
 };
 
 const get = async (id: string): Promise<Image | null> => {
@@ -39,12 +39,12 @@ const findSimilarImages = async (
   image: UploadedFile,
   threshold: number = 0.85,
 ): Promise<SimilarImageEntry[]> => {
-  const tempPath = path.join(WORKING_DIR, "temp", uuidv4());
+  const tempPath = path.join(config.WORKING_DIR, "temp", uuidv4());
   await image.mv(tempPath);
   // hash is 64 chars, so a distance of 0 means the 2 strings are equal, and a distance of 64 means they're completely
   // different
   const distThreshold = (1 - threshold) * 64;
-  const hash = await imghash.hash(tempPath, IMAGE_HASH_BITS);
+  const hash = await imghash.hash(tempPath, config.IMAGE_HASH_BITS);
   const images = await Image.findAll();
   const similar: SimilarImageEntry[] = [];
   const promises: Promise<void>[] = [];
@@ -76,7 +76,7 @@ const add = async (file: UploadedFile): Promise<Image> => {
   await file.mv(filePath);
   logger.debug(`Moved uploaded image file to \`${filePath}\``);
   try {
-    const hash = await imghash.hash(filePath, IMAGE_HASH_BITS);
+    const hash = await imghash.hash(filePath, config.IMAGE_HASH_BITS);
     const image = await Image.create({ id, mimeType: file.mimetype, name: file.name, hash });
     logger.info(`Created image record: id=${image.id}, name=${image.name}`);
     return image;
