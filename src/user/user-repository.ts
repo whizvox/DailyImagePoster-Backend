@@ -7,7 +7,7 @@ import { compare, hashSync } from "bcrypt";
 import { randomBytes } from "node:crypto";
 
 const initialize = async (): Promise<void> => {
-  await User.sync();
+  await User.sync({ force: config.ENVIRONMENT === "test" });
   if (config.DEFAULT_ADMIN_CREATE) {
     const prevAdmin = await User.findOne({ where: { name: config.DEFAULT_ADMIN_NAME } });
     if (prevAdmin === null) {

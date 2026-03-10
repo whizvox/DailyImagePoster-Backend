@@ -10,5 +10,15 @@
     "quotes": ["error", "single"],
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/explicit-function-return-type": "error"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["./test/**/*"],
+      "plugins": ["jest"],
+      "extends": ["plugin:jest/recommended"],
+      "globals": {
+        "jest": true
+      }
+    }
+  ]
 }

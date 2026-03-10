@@ -11,7 +11,7 @@ import SimilarImageEntry from "./similar-image.ts";
 import leven from "leven";
 
 const initialize = async (): Promise<void> => {
-  await Image.sync();
+  await Image.sync({ force: config.ENVIRONMENT === "test" });
   await mkdir(path.join(config.WORKING_DIR, "images"), { recursive: true });
 };
 

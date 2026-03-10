@@ -1,8 +1,9 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ApiError, forebidden, unauthorized } from "../api-result.ts";
 import { AuthLevel, guestAuth } from "../auth.ts";
 import logger from "../logger.ts";
 import { AuthorizedRequest } from "../util.ts";
+import { config } from "../config.ts";
 
 interface AuthorizeOptions {
   level?: AuthLevel;
@@ -10,6 +11,11 @@ interface AuthorizeOptions {
 }
 
 const authorize = (options: AuthorizeOptions = {}) => {
+  if (config.ENVIRONMENT === "test") {
+    return (req: Request, res: Response, next: NextFunction) => {
+      next();
+    };
+  }
   if (options.level === undefined) {
     options.level = AuthLevel.BEARER;
   }

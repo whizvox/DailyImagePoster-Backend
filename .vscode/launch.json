@@ -6,7 +6,13 @@
   "configurations": [
     {
       "command": "npm start",
-      "name": "Run npm start",
+      "name": "Run Development Server",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "command": "ENVIRONMENT=test WORKING_DIR=testrun npm start",
+      "name": "Run Test Server",
       "request": "launch",
       "type": "node-terminal"
     }

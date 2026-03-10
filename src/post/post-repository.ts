@@ -3,9 +3,10 @@ import Page from "../db/page.ts";
 import Post from "./post.ts";
 import PostSearchQuery from "./post-search-query.ts";
 import sequelize from "../db/database.ts";
+import { config } from "../config.ts";
 
 const initialize = async (): Promise<void> => {
-  await Post.sync();
+  await Post.sync({ force: config.ENVIRONMENT === "test" });
 };
 
 const isUnique = async (column: string, value: unknown): Promise<boolean> => {
