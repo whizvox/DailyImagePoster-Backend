@@ -6,6 +6,7 @@ import fileUpload from "express-fileupload";
 import logger from "./logger.ts";
 import postRouter from "./post/post-router.ts";
 import userRouter from "./user/user-router.ts";
+import reserveRouter from "./reserve/reserve-router.ts";
 import imageRouter from "./image/image-router.ts";
 import errorHandler from "./middleware/error-handler.ts";
 import userAuthentication from "./middleware/user-authentication.ts";
@@ -34,6 +35,7 @@ app.use(userAuthentication());
 app.use("/post", postRouter);
 app.use("/user", userRouter);
 app.use("/image", imageRouter);
+app.use("/reserve", reserveRouter);
 app.use(notFoundHandler());
 app.use(errorHandler());
 

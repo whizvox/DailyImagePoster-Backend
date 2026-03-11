@@ -1,10 +1,5 @@
 import { validate as uuidValidate, version as uuidVersion } from "uuid";
-
-class ParseError extends Error {
-  constructor(reason: string, field?: string) {
-    super(`${field === undefined ? "" : "(" + field + ") "}${reason}`);
-  }
-}
+import ParseError from "./query/parse-error";
 
 type QueryValue = string | undefined;
 

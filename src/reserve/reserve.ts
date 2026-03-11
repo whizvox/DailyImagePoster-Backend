@@ -1,33 +1,28 @@
 import {
+  CreationOptional,
   DataTypes,
   InferAttributes,
   InferCreationAttributes,
   Model,
-  CreationOptional,
 } from "sequelize";
-import sequelize from "../db/database.ts";
-import Image from "../image/image.ts";
+import sequelize from "../db/database";
+import Image from "../image/image";
 
-class Post extends Model<InferAttributes<Post>, InferCreationAttributes<Post>> {
+class Reserve extends Model<InferAttributes<Reserve>, InferCreationAttributes<Reserve>> {
   declare id: string;
   declare image: string;
-  declare num: number;
-  declare subNum: number;
   declare title: string;
   declare artist: string;
   declare source: string;
-  declare comment: string | null;
+  declare comment: string;
   declare imageNsfw: boolean;
   declare sourceNsfw: boolean;
-  declare directSource: string | null;
-  declare redditPostId: string;
-  declare redditCommentId: string | null;
-  declare imgurId: string | null;
-  declare uploadedAt: Date;
+  declare directSource: string;
   declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }
 
-Post.init(
+Reserve.init(
   {
     id: {
       type: DataTypes.UUIDV4,
@@ -35,19 +30,10 @@ Post.init(
     },
     image: {
       type: DataTypes.UUIDV4,
-      allowNull: false,
       references: {
         model: Image,
         key: "id",
       },
-    },
-    num: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    subNum: {
-      type: DataTypes.TINYINT,
-      allowNull: false,
     },
     title: {
       type: DataTypes.STRING,
@@ -61,7 +47,10 @@ Post.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    comment: DataTypes.TEXT,
+    comment: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
     imageNsfw: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -70,23 +59,16 @@ Post.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
     },
-    directSource: DataTypes.STRING,
-    redditPostId: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-    },
-    redditCommentId: DataTypes.STRING(20),
-    imgurId: DataTypes.STRING(20),
-    uploadedAt: {
-      type: DataTypes.DATE,
+    directSource: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     createdAt: DataTypes.DATE,
+    updatedAt: DataTypes.DATE,
   },
   {
     sequelize,
-    updatedAt: false,
   },
 );
 
-export default Post;
+export default Reserve;
