@@ -5,6 +5,8 @@ import userRepo from "./user-repository.ts";
 import { ApiError, badRequest, created, ok } from "../api-result.ts";
 import { AuthorizedRequest, AuthorizedTypedQueryRequest, TypedQueryRequest } from "../util.ts";
 import { AuthLevel } from "../auth.ts";
+import parseQuery from "../query/parse-query.ts";
+import { booleanParameter, stringParameter } from "../query/default-parameter-types.ts";
 
 interface StrLoginQuery extends Query {
   lifespan?: string;
@@ -73,31 +75,13 @@ router.get("/other", authorize({ admin: true }), async (_req, res: express.Respo
 router.post(
   "/",
   authorize({ admin: true }),
-  async (req: TypedQueryRequest<StrCreateQuery>, res: express.Response) => {
-    let name: string;
-    let password: string;
-    let admin: boolean;
-
-    // name
-    if (req.query.name === undefined) {
-      throw new ApiError(badRequest(`Missing required parameter: \`name\``));
-    }
-    name = req.query.name;
-
-    // password
-    if (req.query.password === undefined) {
-      throw new ApiError(badRequest(`Missing required parameter: \`password\``));
-    }
-    password = req.query.password;
-
-    // admin
-    if (req.query.admin === undefined) {
-      admin = false;
-    } else {
-      admin = req.query.admin !== "0";
-    }
-
-    const result = await userRepo.add(name, password, admin);
+  async (req, res) => {
+    const query = parseQuery(req.body, {
+      name: stringParameter({ trim: true, notBlank: true, required: true }),
+      password: stringParameter({ notBlank: true, required: true }),
+      admin: booleanParameter({ defaultValue: false })
+    });
+    const result = await userRepo.add(query.name!, query.password!, query.admin!);
     res.status(201).send(created(result));
   },
 );

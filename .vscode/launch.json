@@ -15,6 +15,12 @@
       "name": "Run Test Server",
       "request": "launch",
       "type": "node-terminal"
+    },
+    {
+      "command": "npm test",
+      "name": "Run Tests",
+      "request": "launch",
+      "type": "node-terminal"
     }
   ]
 }

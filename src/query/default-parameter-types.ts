@@ -16,7 +16,7 @@ interface Options<Type> {
  */
 const stringParameter = (
   options: Options<string> & { trim?: boolean; notBlank?: boolean } = {},
-) => {
+): Parameter<string> => {
   if (options.trim === undefined) {
     options.trim = false;
   }
@@ -41,7 +41,9 @@ const stringParameter = (
   );
 };
 
-const numberParameter = (options: Options<number> & { min?: number; max?: number } = {}) => {
+const numberParameter = (
+  options: Options<number> & { min?: number; max?: number } = {},
+): Parameter<number> => {
   return new Parameter(
     (value, name) => {
       const n = Number(value);
@@ -61,7 +63,7 @@ const numberParameter = (options: Options<number> & { min?: number; max?: number
   );
 };
 
-const booleanParameter = (options: Options<boolean> = {}) => {
+const booleanParameter = (options: Options<boolean> = {}): Parameter<boolean> => {
   return new Parameter(
     (value, name) => {
       if (value === "0") {
@@ -77,7 +79,9 @@ const booleanParameter = (options: Options<boolean> = {}) => {
   );
 };
 
-const uuidParameter = (options: Options<string> & { defaultGenerate?: boolean } = {}) => {
+const uuidParameter = (
+  options: Options<string> & { defaultGenerate?: boolean } = {},
+): Parameter<string> => {
   if (options.defaultGenerate && options.defaultValue === undefined) {
     options.defaultValue = () => uuidv4();
   }
@@ -93,7 +97,7 @@ const uuidParameter = (options: Options<string> & { defaultGenerate?: boolean } 
   );
 };
 
-const dateParameter = (options: Options<Date> & { defaultNow?: boolean } = {}) => {
+const dateParameter = (options: Options<Date> & { defaultNow?: boolean } = {}): Parameter<Date> => {
   if (options.defaultNow && options.defaultValue === undefined) {
     options.defaultValue = () => new Date();
   }
@@ -110,6 +114,37 @@ const dateParameter = (options: Options<Date> & { defaultNow?: boolean } = {}) =
   );
 };
 
+const enumParameter = (
+  values: string[],
+  options: Options<string> & { ignoreCase?: boolean } = {},
+): Parameter<string> => {
+  options = { ignoreCase: false, ...options };
+  return new Parameter(
+    (value, name) => {
+      for (const enumValue of values) {
+        if (options.ignoreCase) {
+          if (enumValue.toLowerCase() === value.toLowerCase()) {
+            return enumValue;
+          }
+        } else {
+          if (enumValue === value) {
+            return enumValue;
+          }
+        }
+      }
+      throw new ParseError(`Invalid value, must be one of [${values.join(", ")}]`, name);
+    },
+    options.defaultValue,
+    options.required,
+  );
+};
+
 export {
-  booleanParameter, dateParameter, numberParameter, stringParameter, uuidParameter, type Options
+  booleanParameter,
+  dateParameter,
+  numberParameter,
+  stringParameter,
+  uuidParameter,
+  enumParameter,
+  type Options,
 };

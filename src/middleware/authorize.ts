@@ -11,11 +11,11 @@ interface AuthorizeOptions {
 }
 
 const authorize = (options: AuthorizeOptions = {}) => {
-  if (config.ENVIRONMENT === "test") {
-    return (req: Request, res: Response, next: NextFunction) => {
-      next();
-    };
-  }
+  // if (config.ENVIRONMENT === "test") {
+  //   return (req: Request, res: Response, next: NextFunction) => {
+  //     next();
+  //   };
+  // }
   if (options.level === undefined) {
     options.level = AuthLevel.BEARER;
   }

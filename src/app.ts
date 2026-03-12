@@ -12,6 +12,7 @@ import errorHandler from "./middleware/error-handler.ts";
 import userAuthentication from "./middleware/user-authentication.ts";
 import fileSizeLimitHandler from "./middleware/file-size-limit-handler.ts";
 import notFoundHandler from "./middleware/not-found-handler.ts";
+import testRouter from "./test-router.ts";
 
 const app = express();
 
@@ -36,6 +37,10 @@ app.use("/post", postRouter);
 app.use("/user", userRouter);
 app.use("/image", imageRouter);
 app.use("/reserve", reserveRouter);
+if (config.ENVIRONMENT === "test") {
+  logger.warn("Test router is enabled. This gives backdoor access stricting for testing purposes. If this is not intended, please stop the server immediately!");
+  app.use("/test", testRouter);
+}
 app.use(notFoundHandler());
 app.use(errorHandler());
 
