@@ -1,11 +1,16 @@
-import { Router, Request, Response } from "express";
-import authorize from "../middleware/authorize.ts";
-import { ApiError, badRequest, notFound, ok } from "../api-result.ts";
+import { Request, Router } from "express";
 import { UploadedFile } from "express-fileupload";
-import { TypedQueryRequest } from "../util.ts";
-import imageRepo from "./image-repository.ts";
-import { parseNumber } from "../query.ts";
 import path from "node:path";
+import { FormatEnum } from "sharp";
+import { ApiError, badRequest, notFound, ok } from "../api-result.ts";
+import authorize from "../middleware/authorize.ts";
+import { parseNumber } from "../query.ts";
+import { enumParameter, numberParameter } from "../query/default-parameter-types.ts";
+import parseQuery from "../query/parse-query.ts";
+import { TypedQueryRequest } from "../util.ts";
+import imageParameter from "./image-parameter.ts";
+import imageRepo from "./image-repository.ts";
+import { shrinkImage } from "./image-service.ts";
 
 const router = Router();
 
@@ -40,13 +45,31 @@ router.get("/:id", async (req, res) => {
   });
 });
 
-router.post("/", authorize(), async (req: TypedQueryRequest<{ dir?: string }>, res: Response) => {
+router.post("/", authorize(), async (req, res) => {
   if (!req.files || !req.files.image) {
     throw new ApiError(badRequest("Missing required parameter: `image`"));
   }
   const imageFile = req.files.image as UploadedFile;
   const image = await imageRepo.add(imageFile);
   res.status(201).send(ok(image));
+});
+
+router.post("/shrink", authorize(), async (req, res) => {
+  const query = parseQuery(req.body, {
+    image: imageParameter({ required: true }),
+    format: enumParameter(["png", "jpg", "jpeg", "avif", "webp"], { ignoreCase: true }),
+    targetSize: numberParameter({ min: 0 }),
+  });
+  const image = await query.image!;
+  const result = await shrinkImage(image, {
+    ...(query.format && { format: query.format as keyof FormatEnum }),
+    ...(query.targetSize && { targetSize: query.targetSize }),
+  });
+  res.send(ok(result));
+});
+
+router.post("/upscale", authorize(), async (req, res) => {
+  throw new ApiError(badRequest("Not yet implemented"));
 });
 
 router.delete("/:id", authorize(), async (req: Request<{ id: string }>, res) => {
