@@ -10,7 +10,7 @@ import parseQuery from "../query/parse-query.ts";
 import { TypedQueryRequest } from "../util.ts";
 import imageParameter from "./image-parameter.ts";
 import imageRepo from "./image-repository.ts";
-import { shrinkImage } from "./image-service.ts";
+import { shrinkImage, upscaleImage } from "./image-service.ts";
 
 const router = Router();
 
@@ -64,6 +64,20 @@ router.post("/shrink", authorize(), async (req, res) => {
   const result = await shrinkImage(image, {
     ...(query.format && { format: query.format as keyof FormatEnum }),
     ...(query.targetSize && { targetSize: query.targetSize }),
+  });
+  res.send(ok(result));
+});
+
+router.post("/upscale", authorize(), async (req, res) => {
+  const query = parseQuery(req.body, {
+    image: imageParameter({ required: true }),
+    scale: numberParameter({ min: 1, max: 8 }),
+    noise: numberParameter({ min: -1, max: 3 }),
+  });
+  const image = await query.image!;
+  const result = await upscaleImage(image, {
+    ...(query.scale && { scale: Math.floor(query.scale) }),
+    ...(query.noise && { noise: Math.floor(query.noise) as -1 | 0 | 1 | 2 | 3 }),
   });
   res.send(ok(result));
 });

@@ -18,7 +18,7 @@ const logger = mainLogger.child({ module: "Test" });
 
 router.post("/reset", async (req, res) => {
   const query = parseQuery(req.query, {
-    db: enumParameter(["all", "image", "post", "reserve", "user"], { defaultValue: "all" })
+    db: enumParameter(["all", "image", "post", "reserve", "user"], { defaultValue: "all" }),
   });
   if (query.db === "post" || query.db === "all") {
     await Post.sync({ force: true });

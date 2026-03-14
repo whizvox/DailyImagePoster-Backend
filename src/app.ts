@@ -3,16 +3,16 @@ initConfig();
 
 import express, { json, Request, Response, urlencoded } from "express";
 import fileUpload from "express-fileupload";
-import logger from "./logger.ts";
-import postRouter from "./post/post-router.ts";
-import userRouter from "./user/user-router.ts";
-import reserveRouter from "./reserve/reserve-router.ts";
 import imageRouter from "./image/image-router.ts";
+import logger from "./logger.ts";
 import errorHandler from "./middleware/error-handler.ts";
-import userAuthentication from "./middleware/user-authentication.ts";
 import fileSizeLimitHandler from "./middleware/file-size-limit-handler.ts";
 import notFoundHandler from "./middleware/not-found-handler.ts";
+import userAuthentication from "./middleware/user-authentication.ts";
+import postRouter from "./post/post-router.ts";
+import reserveRouter from "./reserve/reserve-router.ts";
 import testRouter from "./test-router.ts";
+import userRouter from "./user/user-router.ts";
 
 const app = express();
 
@@ -38,7 +38,9 @@ app.use("/user", userRouter);
 app.use("/image", imageRouter);
 app.use("/reserve", reserveRouter);
 if (config.ENVIRONMENT === "test") {
-  logger.warn("Test router is enabled. This gives backdoor access stricting for testing purposes. If this is not intended, please stop the server immediately!");
+  logger.warn(
+    "Test router is enabled. This gives backdoor access stricting for testing purposes. If this is not intended, please stop the server immediately!",
+  );
   app.use("/test", testRouter);
 }
 app.use(notFoundHandler());

@@ -1,12 +1,12 @@
 import express from "express";
 import { Query } from "express-serve-static-core";
-import authorize from "../middleware/authorize.ts";
-import userRepo from "./user-repository.ts";
 import { ApiError, badRequest, created, ok } from "../api-result.ts";
-import { AuthorizedRequest, AuthorizedTypedQueryRequest, TypedQueryRequest } from "../util.ts";
 import { AuthLevel } from "../auth.ts";
-import parseQuery from "../query/parse-query.ts";
+import authorize from "../middleware/authorize.ts";
 import { booleanParameter, stringParameter } from "../query/default-parameter-types.ts";
+import parseQuery from "../query/parse-query.ts";
+import { AuthorizedRequest, AuthorizedTypedQueryRequest, TypedQueryRequest } from "../util.ts";
+import userRepo from "./user-repository.ts";
 
 interface StrLoginQuery extends Query {
   lifespan?: string;
@@ -72,19 +72,15 @@ router.get("/other", authorize({ admin: true }), async (_req, res: express.Respo
   res.send(ok(users));
 });
 
-router.post(
-  "/",
-  authorize({ admin: true }),
-  async (req, res) => {
-    const query = parseQuery(req.body, {
-      name: stringParameter({ trim: true, notBlank: true, required: true }),
-      password: stringParameter({ notBlank: true, required: true }),
-      admin: booleanParameter({ defaultValue: false })
-    });
-    const result = await userRepo.add(query.name!, query.password!, query.admin!);
-    res.status(201).send(created(result));
-  },
-);
+router.post("/", authorize({ admin: true }), async (req, res) => {
+  const query = parseQuery(req.body, {
+    name: stringParameter({ trim: true, notBlank: true, required: true }),
+    password: stringParameter({ notBlank: true, required: true }),
+    admin: booleanParameter({ defaultValue: false }),
+  });
+  const result = await userRepo.add(query.name!, query.password!, query.admin!);
+  res.status(201).send(created(result));
+});
 
 router.delete(
   "/other/:id",

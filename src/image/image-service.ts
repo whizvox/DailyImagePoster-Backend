@@ -7,6 +7,7 @@ import sharp, {
   PngOptions,
   WebpOptions,
 } from "sharp";
+import waifu2x from "waifu2x";
 import logger from "../logger";
 import { getTempFile } from "../temp-file-service";
 import Image from "./image";
@@ -60,7 +61,7 @@ const shrinkImage = async (
     targetSize?: number;
     maxIterations?: number;
     sizeMultiplierDelta?: number;
-  },
+  } = {},
 ): Promise<ResizeResult> => {
   const inputImage = await readFile(imageRepo.getImageFilePath(image.id));
   if (options.format === undefined) {
@@ -119,11 +120,75 @@ const shrinkImage = async (
   try {
     await fs.rm(tempPath);
   } catch (err) {
-    logger.warn(`Failed to clean up temporary image at \`${tempPath}\``);
+    logger.warn(`Failed to clean up temporary image at \`${tempPath}\`\n${err}`);
   }
   const storageDiff = metadata.size === undefined ? 0 : (size - metadata.size) / metadata.size;
   const sizeDiff = (width - metadata.width) / metadata.width;
   return { storage: size, size: { width, height }, storageDiff, sizeDiff };
 };
 
-export { shrinkImage };
+const upscaleImage = async (
+  image: Image,
+  options: { scale?: number; noise?: -1 | 0 | 1 | 2 | 3 } = {},
+): Promise<ResizeResult> => {
+  const imagePath = imageRepo.getImageFilePath(image.id);
+  // waifu2x REQUIRES the file extension in order to work properly, but I don't want to mess with the original file, so
+  // copy the original file into a temp file with the appropriate extension.
+  let origExt = image.mimeType.substring(image.mimeType.indexOf("/") + 1);
+  const origCopyPath = (await getTempFile()) + "." + origExt;
+  await fs.copyFile(imagePath, origCopyPath);
+
+  // metadata for the original image
+  const origMetadata = await sharp(origCopyPath).metadata();
+  let origSize = 0;
+  try {
+    const stats = await fs.stat(origCopyPath);
+    origSize = stats.size;
+  } catch (err) {
+    logger.warn(`Failed to retrieve file stats at \`$${origCopyPath}\`\n${err}`);
+  }
+  options = { scale: 2, noise: 2, ...options };
+  const outputPath = (await getTempFile()) + ".png";
+  await waifu2x.upscaleImage(origCopyPath, outputPath, {
+    scale: options.scale!,
+    noise: options.noise!,
+  });
+  try {
+    await fs.rm(origCopyPath);
+  } catch (err) {
+    logger.warn(`Failed to cleanup temp copied image at \`${origCopyPath}\`\n${err}`);
+  }
+  try {
+    await fs.access(outputPath);
+  } catch (err) {
+    throw new Error("Failed to upscale image");
+  }
+  await replaceImage(image, outputPath, "image/png");
+  logger.info(`Finished upscaling image: ${image.id}`);
+  try {
+    await fs.rm(outputPath);
+  } catch (err) {
+    logger.warn(`Failed to cleanup temp upscaled image at \`${outputPath}\`\n${err}`);
+  }
+  const newMetadata = await sharp(imagePath).metadata();
+  let newSize = 0;
+  try {
+    const stats = await fs.stat(imagePath);
+    newSize = stats.size;
+  } catch (err) {
+    logger.warn(`Failed to retrieve file stats at \`${imagePath}\`\n${err}`);
+  }
+  const sizeDiff = (newMetadata.width - origMetadata.width) / origMetadata.width;
+  let storageDiff = 0;
+  if (origSize > 0 && newSize > 0) {
+    storageDiff = (newSize - origSize) / origSize;
+  }
+  return {
+    storage: newSize,
+    size: { width: newMetadata.width, height: newMetadata.height },
+    storageDiff,
+    sizeDiff,
+  };
+};
+
+export { shrinkImage, upscaleImage };
