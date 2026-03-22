@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "npm start",
+      "command": "CORS_ALLOW_ORIGIN=http://localhost:5173 npm start",
       "name": "Run Development Server",
       "request": "launch",
       "type": "node-terminal"

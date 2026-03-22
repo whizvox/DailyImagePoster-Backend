@@ -1,9 +1,9 @@
 import { Op, WhereAttributeHash } from "sequelize";
-import Page from "../db/page.ts";
-import Post from "./post.ts";
-import PostSearchQuery from "./post-search-query.ts";
-import sequelize from "../db/database.ts";
 import { config } from "../config.ts";
+import sequelize from "../db/database.ts";
+import Page from "../db/page.ts";
+import PostSearchQuery from "./post-search-query.ts";
+import Post from "./post.ts";
 
 const initialize = async (): Promise<void> => {
   await Post.sync({ force: config.ENVIRONMENT === "test" });
@@ -138,6 +138,14 @@ const get = (id: string): Promise<Post | null> => {
   return Post.findOne({ where: { id } });
 };
 
+const getAvailableNumber = async (): Promise<number> => {
+  const post = await Post.findOne({ order: ["num", "DESC"] });
+  if (post === null) {
+    return 1;
+  }
+  return post.num + 1;
+};
+
 const add = (post: Post): Promise<Post> => {
   return Post.create(post);
 };
@@ -157,6 +165,7 @@ export default {
   isImgurPostUnique,
   getPage,
   get,
+  getAvailableNumber,
   add,
   remove,
 };

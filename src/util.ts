@@ -35,10 +35,19 @@ const sanitizeDirectoryName = (dir: string): string => {
   return dir.replaceAll(/[^\w-]/g, "_");
 };
 
+const getImageExtension = (mimeType: string): string | null => {
+  if (mimeType.startsWith("image/")) {
+    return mimeType.substring(6);
+  }
+  return null;
+};
+
 export {
-  type TypedQueryRequest,
+  formatBytes,
+  getImageExtension,
+  sanitizeDirectoryName,
   type AuthorizedRequest,
   type AuthorizedTypedQueryRequest,
-  formatBytes,
-  sanitizeDirectoryName,
+  type TypedQueryRequest
 };
+

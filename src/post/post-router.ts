@@ -1,20 +1,20 @@
-import { Router, Request, Response } from "express";
-import postRepo from "./post-repository.ts";
-import PostSearchQuery from "./post-search-query.ts";
-import Post from "./post.ts";
+import { Request, Response, Router } from "express";
+import { Query } from "express-serve-static-core";
 import { v4 as uuidv4 } from "uuid";
 import { ApiError, badRequest, conflict, created, ok } from "../api-result.ts";
+import authorize from "../middleware/authorize.ts";
 import {
-  parseNumber,
   parseBoolean,
   parseDate,
   ParseError,
-  parseUuid,
+  parseNumber,
   parseTrimmedString,
+  parseUuid,
 } from "../query.ts";
-import authorize from "../middleware/authorize.ts";
 import { TypedQueryRequest } from "../util.ts";
-import { Query } from "express-serve-static-core";
+import postRepo from "./post-repository.ts";
+import PostSearchQuery from "./post-search-query.ts";
+import Post from "./post.ts";
 
 interface StrSearchQuery extends Query {
   page: string;
@@ -82,6 +82,11 @@ router.get("/:id", async (req, res) => {
   const { id } = req.params;
   const post = await postRepo.get(id);
   res.send(ok(post));
+});
+
+router.get("/available", async (req, res) => {
+  const id = await postRepo.getAvailableNumber();
+  res.send(ok(id));
 });
 
 router.get("/", async (req: TypedQueryRequest<StrSearchQuery>, res: Response) => {
